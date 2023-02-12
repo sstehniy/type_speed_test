@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 
-import { WordTestConfig } from '@/context/reducer';
+import { Language, TestType, WordTestConfig } from '@/context/reducer';
+
+enum WordStatus {
+  NONE = 'none',
+  CORRECT = 'correct',
+  INCORRECT = 'incorrect',
+  SKIPPED = 'skipped',
+  CURRENT = 'current',
+}
 
 type Word = {
   word: string;
   typedWord: string;
-  status: 'none' | 'correct' | 'incorrect' | 'skipped' | 'current';
+  status: WordStatus;
 };
 
 type TypeStat = {
@@ -31,4 +40,45 @@ export const useWordTest = ({
   const [wpm, setWpm] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(timeInSeconds);
   const [typeStats, setTypeStats] = useState<TypeStat[]>([]);
+  const { data, isLoading, error, refetch } = useQuery<string[]>(
+    ['words', language, testType, timeInSeconds, wordsCount],
+    async () => {
+      let baseUrl = 'http://localhost:3000/api/words';
+      switch (language) {
+        case Language.ENGLISH:
+          baseUrl = `${baseUrl}?language=en`;
+          break;
+        case Language.RUSSIAN:
+          baseUrl = `${baseUrl}?language=ru`;
+          break;
+        case Language.GERMAN:
+          baseUrl = `${baseUrl}?language=de`;
+          break;
+      }
+      baseUrl = `${baseUrl}&count=${wordsCount}`;
+
+      const response = await fetch(baseUrl);
+      if (!response.ok) throw new Error('Error while fetching words');
+      const data = await response.json();
+      return data;
+    },
+    {
+      enabled: testType !== TestType.QUOTES,
+    },
+  );
+
+  useEffect(() => {
+    if (!isLoading && !error && data) {
+      const words: Word[] = data.map(
+        (word: string) =>
+          ({
+            word,
+            typedWord: '',
+            status: WordStatus.NONE,
+          } as Word),
+      );
+      setWords(words);
+      setCurrentWord(words[0]);
+    }
+  }, [data]);
 };
