@@ -1,0 +1,33 @@
+.logo-text {
+    min-width: 3px;
+    min-height: 40px;
+}
+
+.logo-cursor {
+    position: absolute;
+    right: -3px;
+    width: 3px;
+    background-color: #fff;
+    top: 4px;
+    bottom: 7px;
+    animation: blink .8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+    transition: opacity .2s ease-in-out;
+}
+
+.logo-cursor.hidden {
+    opacity: 0;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
