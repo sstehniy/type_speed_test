@@ -5,9 +5,10 @@ function Logo() {
   const [currentText, setCurrentText] = useState<string[]>([]);
   const [cursorVisible, setCursorVisible] = useState<boolean>(true);
   const [allowTextAppear, setAllowTextAppear] = useState<boolean>(false);
+  let timeout: number | undefined;
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    timeout = setTimeout(() => {
       setAllowTextAppear(true);
     }, 1000);
     return () => {
@@ -26,7 +27,7 @@ function Logo() {
         i++;
       } else {
         clearInterval(interval);
-        setTimeout(() => {
+        timeout = setTimeout(() => {
           setCursorVisible(false);
         }, 200);
       }
@@ -34,9 +35,11 @@ function Logo() {
 
     return () => {
       clearInterval(interval);
+      timeout && clearTimeout(timeout);
       setCursorVisible(true);
     };
   }, [allowTextAppear]);
+
   return (
     <div className="logo text-xl sm:text-3xl relative">
       <div
